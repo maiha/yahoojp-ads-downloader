@@ -45,17 +45,16 @@ token:
 ### macro for API
 ### api <get> <req.json> <res.json>
 define api
-	make token
-	rm -f "$3"
+	@make -s -C $(OAUTH_DIR) token
+	@rm -f "$3"
 	curl -s -X POST "$(SEARCH_ENDPOINT)/$(SERVICE)/$1" \
 	  -D "$3.header" \
 	  -H "accept: application/json" \
 	  -H "Authorization: Bearer `jq -r .access_token $(TOKEN_JSON)`" \
 	  -H "Content-Type: application/json" \
 	  -d "@$2" >  "$3.err"
-	jq .errors "$3.err"
-	grep -q '"errors":null' "$3.err"
-	mv "$3.err" "$3"
+	@grep -q '"errors":null' "$3.err" || jq .errors "$3.err"
+	@mv "$3.err" "$3"
 endef
 
 ######################################################################

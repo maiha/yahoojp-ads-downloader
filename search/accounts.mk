@@ -22,8 +22,8 @@ recv: accounts
 	done
 
 get/accounts/%:
-	jq ".accountId = $*" req.json > "accounts/$*/req.json.err"
-	mv "accounts/$*/req.json.err" "accounts/$*/req.json"
+	@jq ".accountId = $*" req.json > "accounts/$*/req.json.err"
+	@mv "accounts/$*/req.json.err" "accounts/$*/req.json"
 	$(call api,get,accounts/$*/req.json,accounts/$*/res.json) || exit 255
 
 data: accounts $(EACH_JSONL)
