@@ -1,6 +1,4 @@
 RES_JSONS  = $(sort $(wildcard accounts/*/res.json))
-EACH_JSONL = $(addsuffix data.jsonl,$(dir $(RES_JSONS)))
-EACH_KEYS  = $(addsuffix data.keys,$(dir $(RES_JSONS)))
 
 usage:
 	# make accounts  # prepare account directories
@@ -26,10 +24,14 @@ get/accounts/%:
 	@mv "accounts/$*/req.json.err" "accounts/$*/req.json"
 	$(call api,get,accounts/$*/req.json,accounts/$*/res.json) || exit 255
 
-data: accounts $(EACH_JSONL)
+each_jsonl: $(addsuffix data.jsonl,$(dir $(RES_JSONS)))
+
+data: accounts
+	make each_jsonl -j "$(NPROCS)"
 	@rm -f "data.jsonl" "data.jsonl.tmp"
-	find accounts -type f -name 'data.jsonl' -exec cat {} + >> "data.jsonl.tmp"
+	@find accounts -type f -name 'data.jsonl' -exec cat {} + >> "data.jsonl.tmp"
 	@mv "data.jsonl.tmp" "data.jsonl"
+	@ls -lh "data.jsonl"
 
 ######################################################################
 ### accounts
@@ -41,7 +43,7 @@ accounts: $(ACCOUNTS_JSON)
 	@echo "created: `find accounts -mindepth 1 -type d | wc -l` accounts"
 
 accounts/%/data.jsonl : accounts/%/res.json
-	jq -f map.jq "$<" > "$@.err"
+	@jq -f map.jq "$<" > "$@.err"
 	@mv "$@.err" "$@"
 
 accounts/%/num:

@@ -1,7 +1,7 @@
 SEARCH_ENDPOINT=https://ads-search.yahooapis.jp/api/v5
 DISPLAY_ENDPOINT=https://ads-display.yahooapis.jp/api/v5
 DB=yahoo_search
-NPROCS=4
+NPROCS ?= 4
 
 mkfile_path := $(abspath $(firstword $(MAKEFILE_LIST)))
 current_dir := $(notdir $(patsubst %/,%,$(dir $(mkfile_path))))
@@ -35,6 +35,10 @@ clean:
 
 clean.jsonl:
 	find . -name '*.jsonl' | xargs -r rm
+
+gc:
+	@find . -name data.jsonl | xargs -r rm
+	@find . -name res.json   | xargs -r -n1 "-P $(NPROCS)" gzip -f
 
 ######################################################################
 ### access token
