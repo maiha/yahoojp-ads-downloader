@@ -1,5 +1,6 @@
+include ../const.env
 include ../../credential.env
-include ../service.mk
+include ../../lib/service.mk
 
 usage:
 	# make recv      # call API and store as res.json
