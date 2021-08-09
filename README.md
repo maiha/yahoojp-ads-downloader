@@ -40,25 +40,25 @@ If you don't need to update the DB and just want to execute the API, execute `re
 ## Search Ads
 
 ```console
-make run -C AccountService
-make run -C AdGroupAdService
-make run -C AdGroupService
-make run -C BiddingStrategyService
-make run -C BudgetOrderService
-make run -C CampaignService
-make run -C ConversionTrackerService
-make run -C DictionaryService
+make run -C search/AccountService
+make run -C search/AdGroupAdService
+make run -C search/AdGroupService
+make run -C search/BiddingStrategyService
+make run -C search/BudgetOrderService
+make run -C search/CampaignService
+make run -C search/ConversionTrackerService
+make run -C search/DictionaryService
 ```
 
 ## Display Ads
 
 ```console
-make run -C AccountService
-make run -C AdGroupAdService
-make run -C AdGroupService
-make run -C BudgetOrderService
-make run -C CampaignService
-make run -C ConversionTrackerService
-make run -C StatsService
-make run -C VideoService
+make run -C display/AccountService
+make run -C display/AdGroupAdService
+make run -C display/AdGroupService
+make run -C display/BudgetOrderService
+make run -C display/CampaignService
+make run -C display/ConversionTrackerService
+make run -C display/StatsService
+make run -C display/VideoService
 ```

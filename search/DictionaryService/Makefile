@@ -1,5 +1,6 @@
+include ../const.env
 include ../../credential.env
-include ../service.mk
+include ../../lib/service.mk
 
 TABLE=GeographicLocation
 
