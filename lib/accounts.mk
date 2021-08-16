@@ -1,4 +1,15 @@
+# Give priority to files in the current dir
+ifeq (,$(wildcard map.jq))
+MAP_JQ=../../lib/map.jq
+else
+MAP_JQ=map.jq
+endif
+
 usage:
+	# SERVICE=$(SERVICE)
+	# TABLE=$(TABLE)
+	# TABLE_LC=$(TABLE_LC)
+	# RECORD_KEY=$(RECORD_KEY)
 	# make accounts  # prepare account directories
 	# make recv      # call API and store as res.json
 	# make data      # create data.jsonl from res.json
@@ -41,7 +52,7 @@ accounts: $(ACCOUNTS_JSON)
 	@echo "created: `find accounts -mindepth 1 -type d | wc -l` accounts"
 
 accounts/%/data.jsonl : accounts/%/res.json
-	@jq -f map.jq "$<" > "$@.err"
+	@jq -f "$(MAP_JQ)" --arg RECORD_KEY "$(RECORD_KEY)" "$<" > "$@.err"
 	@mv "$@.err" "$@"
 
 accounts/%/num:

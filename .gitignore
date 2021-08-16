@@ -3,7 +3,8 @@ accounts
 token.*
 res.*
 data.*
-schema.*
+schema.json
+schema.yaml
 *.header
 *.jsonl
 *.tmp
