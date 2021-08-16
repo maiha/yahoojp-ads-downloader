@@ -1,11 +1,13 @@
-mkfile_path := $(abspath $(firstword $(MAKEFILE_LIST)))
-current_dir := $(notdir $(patsubst %/,%,$(dir $(mkfile_path))))
+-include const.env
 
-SERVICE=$(current_dir)
+SERVICE ?= $(notdir $(CURDIR))
+TABLE ?= $(subst Service,,$(SERVICE))
+TABLE_LC ?= $(shell echo "$(TABLE)" | tr A-Z a-z)
+RECORD_KEY ?= $(TABLE_LC)Record
+
 OAUTH_DIR=../../oauth
 TOKEN_JSON=$(OAUTH_DIR)/token.json
 ACCOUNTS_JSON=../AccountService/res.json
-TABLE=$(subst Service,,$(SERVICE))
 
 ######################################################################
 ### check required variables
@@ -24,9 +26,12 @@ $(call check_defined, CLIENT_SECRET)
 $(call check_defined, REFRESH_TOKEN)
 
 # const
-$(call check_defined, ENDPOINT)
-$(call check_defined, DB)
+$(call check_defined, API)
+$(call check_defined, V)
 $(call check_defined, NPROCS)
+
+ENDPOINT=https://ads-$(API).yahooapis.jp/api/v$(V)
+DB ?= yahoo_$(API)
 
 ######################################################################
 all: usage
@@ -75,6 +80,7 @@ create-table: table.sql
 
 replace-data: data.jsonl table.sql
 	clickhouse-client -d "$(DB)" -q "DROP TABLE IF EXISTS tmp_$(TABLE)"
+	clickhouse-client -d "$(DB)" -q "DROP TABLE IF EXISTS $(TABLE)_old"
 	sed -e 's/^CREATE TABLE .*$$/CREATE TABLE tmp_$(TABLE) (/' table.sql | clickhouse-client -d "$(DB)"
 	clickhouse-client -d "$(DB)" -n -q "SET input_format_skip_unknown_fields=1; INSERT INTO tmp_$(TABLE) FORMAT JSONEachRow" < "$<"
 	clickhouse-client -d "$(DB)" -q "RENAME TABLE $(TABLE) TO $(TABLE)_old, tmp_$(TABLE) TO $(TABLE)"
@@ -83,76 +89,6 @@ replace-data: data.jsonl table.sql
 	@clickhouse-client -d "$(DB)" -q "SELECT COUNT(*) FROM $(TABLE)"
 
 ######################################################################
-### [develop] generate table.sql automatically
-
-data.keys: data.jsonl
-	jq -s -r '[ .[] | keys ] | flatten | unique | .[]' < "$<" > "$@.err"
-	@mv "$@.err" "$@"
-
-.PHONY : data.types
-data.types: data.keys
-	@for x in `cat data.keys`; do \
-	  make data.types/$$x; \
-	done
-
-.PHONY : data.samples
-data.samples: data.keys
-	@for x in `cat data.keys`; do \
-	  make data.samples/$$x; \
-	done
-
-data.samples/%:
-	mkdir -p "$(dir $@)"
-	jq ".$*" data.jsonl > "$@.err"
-	mv "$@.err" "$@"
-
-data.first/%: data.samples/%
-	mkdir -p "$(dir $@)"
-	cat "$<" | cut -b1 | sort | uniq | tr -d '\n' > "$@.err"
-	mv "$@.err" "$@"
-
-data.types/%: data.first/%
-	@mkdir -p "$(dir $@)"
-	@rm -f "$@"
-	@grep -q -v -E '^["n]+$$'   "$<" || echo String > "$@"
-	@grep -q -v -E '^[0-9n]+$$' "$<" || echo Int64  > "$@"
-	@[ -f "$@" ]
-
-gen/table.sql: data.samples data.types
-	@rm -f "table.sql" "table.sql.tmp"
-	@touch "table.sql.tmp"
-	@printf "%s" "CREATE TABLE IF NOT EXISTS $(TABLE) (" >> "table.sql.tmp"
-	@for x in `cat data.keys`; do \
-	  printf "\n  %s %s," "$$x" "`cat data.types/$$x`" >> "table.sql.tmp"; \
-	done
-	@sed -i -e '$$ s/,//' "table.sql.tmp"
-	@echo "\n) Engine = Log" >> "table.sql.tmp"
-	@mv "table.sql.tmp" "table.sql"
-
-TABLE_LC=$(shell echo "$(TABLE)" | tr A-Z a-z)
-schema.yaml:
-	# [$@] not found!
-	#
-	# Please download the schema for [$(SERVICE)] manually. For example;
-	#   curl https://raw.githubusercontent.com/yahoojp-marketing/ads-display-api-documents/master/design/v7/$(TABLE_LC)/$(TABLE).yaml > $@
-	#
-	@exit 1
-
-schema.tsv: schema.yaml
-	yq -j e . "$<" | jq -r '.$(TABLE).properties | to_entries | map(["\(.key)", "\(.value.type)", "\(.value.format)"]) |.[] | @tsv' > "$@.err"
-	@mv "$@.err" "$@"
-
-schema.json: schema.yaml
-	@yq -j e . "$<" | jq -c -r '.$(TABLE).properties | to_entries | .[] | {key: .key, type: .value.type, format: .value.format}' > "$@.err"
-	@mv "$@.err" "$@"
-
-fix/data.types: schema.json
-	@make $(addprefix fix/type/double/data.types/$(TABLE_LC)_,$(shell jq -r 'select(.format == "double").key' schema.json))
-
-fix/type/double/%:
-	@if [ -f "$*" ]; then \
-	  echo "changed: [`cat $*`] to [Float64] ($*)"; \
-	  echo "Float64" > "$*"; \
-	else \
-	  echo "skip: $* (not found)"; \
-	fi
+### usage for schema
+schema:
+	@echo make -f ../../lib/schema.mk

@@ -20,6 +20,23 @@ CLIENT_SECRET=...
 REFRESH_TOKEN=...
 ```
 
+## constants
+
+| Group | Variable | Description | Default |
+| ------ | ------ | ------ | ------ |
+| recv   | API | API name | `search` or `display` |
+| recv   | V   | API version | `7` |
+| recv   | SERVICE   | service name | directory name |
+| data | RECORD_KEY  | record path in response JSON | `${lc(SERVICE)}Record` | db   | DB  | dbname in ClickHouse | `yahoo_${API}` |
+| db   | TABLE  | table name in ClickHouse | `yahoo_${API}` |
+
+These variables can be overwritten in the following files, where subdir will be respected.
+
+* `display/const.env`
+* `display/*/const.env`
+* `search/const.env`
+* `search/*/const.env`
+
 ## tasks
 
 ```console
@@ -59,6 +76,7 @@ make run -C display/AdGroupService
 make run -C display/BudgetOrderService
 make run -C display/CampaignService
 make run -C display/ConversionTrackerService
+make run -C display/MediaService
 make run -C display/StatsService
 make run -C display/VideoService
 ```
