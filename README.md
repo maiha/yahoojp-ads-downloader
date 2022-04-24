@@ -2,8 +2,8 @@
 
 Call the API of Yahoo! JAPAN Ads and import the data into the DB(ClickHouse).
 
-* Search Ads API  : https://ads-developers.yahoo.co.jp/reference/ads-search-api/v5/
-* Display Ads API : https://ads-developers.yahoo.co.jp/reference/ads-display-api/v5/
+* Search Ads API  : https://ads-developers.yahoo.co.jp/reference/ads-search-api/v7/
+* Display Ads API : https://ads-developers.yahoo.co.jp/reference/ads-display-api/v7/
 
 #### requirements
 * GNU Make
