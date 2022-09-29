@@ -1,0 +1,22 @@
+CREATE TABLE IF NOT EXISTS Media (
+  accountId Int64,
+  approvalStatus String,
+  campaignBannerFlg String,
+  creationTime Int64,
+  disapprovalReasonCodes_0 String,
+  logoFlg String,
+  imageMedia_mediaType String,
+  imageMedia_aspectRatio String,
+  imageMedia_fileSize Int64,
+  imageMedia_height Int64,
+  imageMedia_mediaAdFormat String,
+  imageMedia_mediaFileType String,
+  imageMedia_width Int64,
+  mediaId Int64,
+  mediaName String,
+  mediaTitle String,
+  thumbnailFlg String,
+  userStatus String,
+  mediaRichFormatFlg String,
+  createdDate Int64
+) Engine = Log
