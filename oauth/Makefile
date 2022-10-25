@@ -1,27 +1,39 @@
 include ../credential.env
 
 OAUTH_URL    = https://biz-oauth.yahoo.co.jp
-REDIRECT_URI = https://yahoojp-marketing.github.io/ads-display-api-documents/oauth2-redirect.html
+REDIRECT_URI = https://yahoojp-marketing.github.io/ads-search-api-documents/oauth2-redirect.html
+E_REDIRECT_URI = $(shell jq -rn --arg x '$(REDIRECT_URI)' '$$x|@uri')
 
 all: usage
 
 usage:
 	# https://ads-developers.yahoo.co.jp/developercenter/ja/startup-guide/api-call.html
-	# make authorize     # Get the authorization from the application user
+	# make authorize     # Get the authorization from the application user (needs: STATE)
 	# make authenticate  # Send a request to the authorization API
 	# make token         # Update the access token if it has expired.
+	#
+	# vars:
+	#   OAUTH_URL        = $(OAUTH_URL)
+	#   CLIENT_ID        = $(CLIENT_ID)
+	#   REDIRECT_URI     = $(REDIRECT_URI)
+	#   E_REDIRECT_URI   = $(E_REDIRECT_URI)
 
 clean:
 	rm -f token.*
 
 authorize:
-	: # authorize
-	@echo "$(OAUTH_URL)/oauth/v1/authorize?response_type=code&client_id=$(CLIENT_ID)&redirect_uri=$(REDIRECT_URI)&scope=yahooads&state=$(STATE)"
+ifndef STATE
+	$(error STATE is not set)
+endif
+	@echo "# Open this url with your Business ID."
+	@echo "$(OAUTH_URL)/oauth/v1/authorize?response_type=code&client_id=$(CLIENT_ID)&redirect_uri=$(E_REDIRECT_URI)&scope=yahooads&state=$(STATE)"
 
 authenticate:
-	: # generate access_token
-	@curl -D "$@.header" "$(OAUTH_URL)/oauth/v1/token?grant_type=authorization_code&client_id=$(CLIENT_ID)&client_secret=$(CLIENT_SECRET)&redirect_uri=$(REDIRECT_URI)&code=$(AUTH_CODE)" > "$@.json"
-
+ifndef CODE
+	$(error CODE is not set)
+endif
+	@echo "# Put this refresh_token into 'credential.env'."
+	@curl -sS -D "$@.header" "$(OAUTH_URL)/oauth/v1/token?grant_type=authorization_code&client_id=$(CLIENT_ID)&client_secret=$(CLIENT_SECRET)&redirect_uri=$(E_REDIRECT_URI)&code=$(CODE)" | tee "$@.json" | jq .
 
 token: expire token.json
 

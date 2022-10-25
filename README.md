@@ -9,6 +9,7 @@ Call the API of Yahoo! JAPAN Ads and import the data into the DB(ClickHouse).
 * GNU Make
 * jq
 * curl
+* nkf (only if oauth/authorize)
 
 ## credentials
 
@@ -18,6 +19,7 @@ Put your crendentials into `credential.env`
 CLIENT_ID=...
 CLIENT_SECRET=...
 REFRESH_TOKEN=...
+AUTH_CODE=...     # only if oauth/authenticate
 ```
 
 ## tasks
@@ -61,4 +63,38 @@ make run -C display/CampaignService
 make run -C display/ConversionTrackerService
 make run -C display/StatsService
 make run -C display/VideoService
+```
+
+## OAuth
+
+https://ads-developers.yahoo.co.jp/developercenter/en/startup-guide/api-call.html
+
+### Authorize application
+
+* put 'CLIENT_ID' and 'CLIENT_SECRET' into `credential.env`
+
+```console
+$ cd oauth
+
+$ make authorize STATE=foo
+# Open this url with your Business ID.
+https://biz-oauth.yahoo.co.jp/oauth/v1/authorize?response_type=code&client_id=...&redirect_uri=...&scope=yahooads&state=foo
+
+### or run with your REDIRECT_URI
+$ make authorize STATE=foo REDIRECT_URI=http://localhost
+# Open this url with your Business ID.
+https://biz-oauth.yahoo.co.jp/oauth/v1/authorize?response_type=code&client_id=...&redirect_uri=http%3A%2F%2Flocalhost&scope=yahooads&state=foo
+```
+
+Check 'code=xxx` in the redirected url, and paste it in 'CODE=xxx'.
+
+```console
+$ make authenticate CODE=xxx
+# Put this refresh_token into 'credential.env'.
+{
+  "access_token": "...",
+  "expires_in": 3600,
+  "token_type": "Bearer",
+  "refresh_token": "..."
+}
 ```
