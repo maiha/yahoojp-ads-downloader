@@ -63,7 +63,7 @@ define api
                   -d "@$2" >  "$3.err" \
 		  && break || echo "retry count:" $$i && sleep ${RETRY_INTERVAL}; \
         done
-	@grep -q '"errors":null' "$3.err" || jq .errors "$3.err"
+	@grep -q '"errors":null' "$3.err" || jq .errors "$3.err" || exit 1
 	@mv "$3.err" "$3"
 endef
 
