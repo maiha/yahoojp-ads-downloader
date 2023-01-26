@@ -28,7 +28,6 @@ $(call check_defined, ENDPOINT)
 $(call check_defined, DB)
 $(call check_defined, NPROCS)
 $(call check_defined, RETRY_COUNT)
-$(call check_defined, RETRY_INTERVAL)
 
 ######################################################################
 all: usage
@@ -54,16 +53,13 @@ token:
 define api
 	@make -s -C $(OAUTH_DIR) token
 	@rm -f "$3"
-	@for i in `seq ${RETRY_COUNT}`; do\
-                curl -s -X POST "$(ENDPOINT)/$(SERVICE)/$1" \
-                  -D "$3.header" \
-                  -H "accept: application/json" \
-                  -H "Authorization: Bearer `jq -r .access_token $(TOKEN_JSON)`" \
-                  -H "Content-Type: application/json" \
-                  -d "@$2" >  "$3.err" \
-		  && break || echo "retry count:" $$i && sleep ${RETRY_INTERVAL}; \
-        done
-	@grep -q '"errors":null' "$3.err" || jq .errors "$3.err" || exit 1
+	curl --retry ${RETRY_COUNT} -s -X POST "$(ENDPOINT)/$(SERVICE)/$1" \
+	  -D "$3.header" \
+	  -H "accept: application/json" \
+	  -H "Authorization: Bearer `jq -r .access_token $(TOKEN_JSON)`" \
+	  -H "Content-Type: application/json" \
+	  -d "@$2" >  "$3.err"
+	@grep -q '"errors":null' "$3.err" || jq .errors "$3.err"
 	@mv "$3.err" "$3"
 endef
 
