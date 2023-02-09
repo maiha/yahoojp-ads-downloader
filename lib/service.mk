@@ -33,7 +33,7 @@ $(call check_defined, RETRY_COUNT)
 all: usage
 
 clean:
-	rm -rf accounts res.* *.jsonl *.tmp data.* schema.*
+	rm -rf accounts res.* *.jsonl *.tmp data.* schema.* ng.json
 
 clean.jsonl:
 	find . -name '*.jsonl' | xargs -r rm
@@ -59,7 +59,7 @@ define api
 	  -H "Authorization: Bearer `jq -r .access_token $(TOKEN_JSON)`" \
 	  -H "Content-Type: application/json" \
 	  -d "@$2" >  "$3.err"
-	@grep -q '"errors":null' "$3.err" || jq .errors "$3.err"
+	@grep -q '"errors":null' "$3.err" || jq .errors "$3.err" >> ng.json
 	@mv "$3.err" "$3"
 endef
 
