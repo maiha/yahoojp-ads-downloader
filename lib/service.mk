@@ -27,12 +27,13 @@ $(call check_defined, REFRESH_TOKEN)
 $(call check_defined, ENDPOINT)
 $(call check_defined, DB)
 $(call check_defined, NPROCS)
+$(call check_defined, RETRY_COUNT)
 
 ######################################################################
 all: usage
 
 clean:
-	rm -rf accounts res.* *.jsonl *.tmp data.* schema.*
+	rm -rf accounts res.* *.jsonl *.tmp data.* schema.* ng.json
 
 clean.jsonl:
 	find . -name '*.jsonl' | xargs -r rm
@@ -52,13 +53,13 @@ token:
 define api
 	@make -s -C $(OAUTH_DIR) token
 	@rm -f "$3"
-	curl -s -X POST "$(ENDPOINT)/$(SERVICE)/$1" \
+	curl --retry ${RETRY_COUNT} -s -X POST "$(ENDPOINT)/$(SERVICE)/$1" \
 	  -D "$3.header" \
 	  -H "accept: application/json" \
 	  -H "Authorization: Bearer `jq -r .access_token $(TOKEN_JSON)`" \
 	  -H "Content-Type: application/json" \
 	  -d "@$2" >  "$3.err"
-	@grep -q '"errors":null' "$3.err" || jq .errors "$3.err"
+	@grep -q '"errors":null' "$3.err" || jq .errors "$3.err" >> ng.json
 	@mv "$3.err" "$3"
 endef
 
