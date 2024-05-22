@@ -1,6 +1,5 @@
 {
   "includeTestAccount": "EXCLUDE_TEST",
-  "includeManagerAccount": "EXCLUDE_MANAGER",
   "numberResults": 200,
   "startIndex": 1
 }
