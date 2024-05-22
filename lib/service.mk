@@ -54,14 +54,14 @@ token:
 define api
 	@make -s -C $(OAUTH_DIR) token
 	@make -s -C ../BaseAccountService run
-	@$(eval BASE_ACCOUNT_ID := $(shell jq '.rval.values[0].account.accountId' ${BASE_ACCOUNT_DIR}/res.json))
+	@$(eval BASE_ACCOUNT_ID := `jq '.rval.values[0].account.accountId' $(BASE_ACCOUNT_DIR)/res.json`)
 	@rm -f "$3"
 	curl --retry ${RETRY_COUNT} -s -X POST "$(ENDPOINT)/$(SERVICE)/$1" \
 	  -D "$3.header" \
 	  -H "accept: application/json" \
 	  -H "Authorization: Bearer `jq -r .access_token $(TOKEN_JSON)`" \
 	  -H "Content-Type: application/json" \
-	  -H "x-z-base-account-id: ${BASE_ACCOUNT_ID}" \
+	  -H "x-z-base-account-id: $(BASE_ACCOUNT_ID)" \
 	  -d "@$2" >  "$3.err"
 	@grep -q '"errors":null' "$3.err" || jq .errors "$3.err" >> ng.json
 	@mv "$3.err" "$3"
