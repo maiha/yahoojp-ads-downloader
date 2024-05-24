@@ -8,6 +8,7 @@ current_dir := $(notdir $(patsubst %/,%,$(dir $(mkfile_path))))
 SERVICE=$(current_dir)
 OAUTH_DIR=../../oauth
 TOKEN_JSON=$(OAUTH_DIR)/token.json
+BASE_ACCOUNT_JSON=base_account_id.json
 
 check_defined = \
     $(strip $(foreach 1,$1, \
@@ -35,8 +36,9 @@ run:
 	$(MAKE) recv
 
 recv: req.json
-	curl -sS -X POST \
+	@curl -sS -X POST "${ENDPOINT}/${SERVICE}/get" \
 	  -H "Content-Type: application/json" \
-          -d "@req.json" \
           -H "Authorization: Bearer `jq -r .access_token $(TOKEN_JSON)`" \
-          "${ENDPOINT}/${SERVICE}/get" > res.json
+	  -d "@req.json" > "$(BASE_ACCOUNT_JSON).tmp"
+	@grep accountId "$(BASE_ACCOUNT_JSON).tmp" > /dev/null
+	@mv "$(BASE_ACCOUNT_JSON).tmp" $(BASE_ACCOUNT_JSON)

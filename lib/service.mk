@@ -4,6 +4,7 @@ current_dir := $(notdir $(patsubst %/,%,$(dir $(mkfile_path))))
 SERVICE=$(current_dir)
 OAUTH_DIR=../../oauth
 BASE_ACCOUNT_DIR=../BaseAccountService
+BASE_ACCOUNT_JSON=$(BASE_ACCOUNT_DIR)/base_account_id.json
 TOKEN_JSON=$(OAUTH_DIR)/token.json
 ACCOUNTS_JSON=../AccountService/res.json
 TABLE=$(subst Service,,$(SERVICE))
@@ -54,7 +55,7 @@ token:
 define api
 	@make -s -C $(OAUTH_DIR) token
 	@make -s -C ../BaseAccountService run
-	@$(eval BASE_ACCOUNT_ID := `jq '.rval.values[0].account.accountId' $(BASE_ACCOUNT_DIR)/res.json`)
+	@$(eval BASE_ACCOUNT_ID := `jq '.rval.values[0].account.accountId' $(BASE_ACCOUNT_JSON)`)
 	@rm -f "$3"
 	curl --retry ${RETRY_COUNT} -s -X POST "$(ENDPOINT)/$(SERVICE)/$1" \
 	  -D "$3.header" \
@@ -65,6 +66,7 @@ define api
 	  -d "@$2" >  "$3.err"
 	@grep -q '"errors":null' "$3.err" || jq .errors "$3.err" >> ng.json
 	@mv "$3.err" "$3"
+	@rm -f $(BASE_ACCOUNT_JSON)
 endef
 
 ######################################################################
