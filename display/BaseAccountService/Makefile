@@ -9,6 +9,7 @@ SERVICE=$(current_dir)
 OAUTH_DIR=../../oauth
 TOKEN_JSON=$(OAUTH_DIR)/token.json
 BASE_ACCOUNT_JSON=base_account_id.json
+BASE_ACCOUNT_ID_TEXT=base_account_id.txt
 
 check_defined = \
     $(strip $(foreach 1,$1, \
@@ -42,3 +43,4 @@ recv: req.json
 	  -d "@req.json" > "$(BASE_ACCOUNT_JSON).tmp"
 	@grep accountId "$(BASE_ACCOUNT_JSON).tmp" > /dev/null
 	@mv "$(BASE_ACCOUNT_JSON).tmp" $(BASE_ACCOUNT_JSON)
+	@jq --exit-status '.rval.values[0].account.accountId' $(BASE_ACCOUNT_JSON) > $(BASE_ACCOUNT_ID_TEXT)
