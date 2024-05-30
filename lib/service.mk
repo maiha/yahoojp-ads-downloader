@@ -55,8 +55,8 @@ token:
 ### api <get> <req.json> <res.json>
 define api
 	@make -s -C $(OAUTH_DIR) token
-	@if [ ! -e $(BASE_ACCOUNT_ID_TEXT) ]; \
-		then @make -s -C ../BaseAccountService run; \
+	@if [ ! -e $(BASE_ACCOUNT_ID_TEXT) ]; then \
+		@make -s -C ../BaseAccountService run; \
 	fi
 	@$(eval BASE_ACCOUNT_ID := `cat $(BASE_ACCOUNT_ID_TEXT)`)
 	@rm -f "$3"
