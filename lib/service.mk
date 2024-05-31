@@ -55,21 +55,17 @@ token:
 ### api <get> <req.json> <res.json>
 define api
 	@make -s -C $(OAUTH_DIR) token
-	@if [ ! -e $(BASE_ACCOUNT_ID_TEXT) ]; then \
-		make -s -C ../BaseAccountService run; \
-	fi
-	@$(eval BASE_ACCOUNT_ID := `cat $(BASE_ACCOUNT_ID_TEXT)`)
+	@make -s -C ../BaseAccountService "$(notdir $(BASE_ACCOUNT_ID_TEXT))"
 	@rm -f "$3"
 	curl --retry ${RETRY_COUNT} -s -X POST "$(ENDPOINT)/$(SERVICE)/$1" \
 	  -D "$3.header" \
 	  -H "accept: application/json" \
 	  -H "Authorization: Bearer `jq -r .access_token $(TOKEN_JSON)`" \
 	  -H "Content-Type: application/json" \
-	  -H "x-z-base-account-id: $(BASE_ACCOUNT_ID)" \
+	  -H "x-z-base-account-id: `cat $(BASE_ACCOUNT_ID_TEXT)`" \
 	  -d "@$2" >  "$3.err"
 	@grep -q '"errors":null' "$3.err" || jq .errors "$3.err" >> ng.json
 	@mv "$3.err" "$3"
-	@rm -f $(BASE_ACCOUNT_JSON)
 endef
 
 ######################################################################

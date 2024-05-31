@@ -28,19 +28,20 @@ $(call check_defined, ENDPOINT)
 $(call check_defined, RETRY_COUNT)
 
 usage:
-	# make recv      # call API and store as res.json
+	# make $(BASE_ACCOUNT_ID_TEXT)      # call API and store as res.json
 
 ######################################################################
 ### Action
 
 run:
-	$(MAKE) recv
+	$(MAKE) $(BASE_ACCOUNT_ID_TEXT)
 
-recv: req.json
-	@curl -sS -X POST "${ENDPOINT}/${SERVICE}/get" \
-	  -H "Content-Type: application/json" \
-          -H "Authorization: Bearer `jq -r .access_token $(TOKEN_JSON)`" \
-	  -d "@req.json" > "$(BASE_ACCOUNT_JSON).tmp"
-	@grep accountId "$(BASE_ACCOUNT_JSON).tmp" > /dev/null
-	@mv "$(BASE_ACCOUNT_JSON).tmp" $(BASE_ACCOUNT_JSON)
-	@jq --exit-status '.rval.values[0].account.accountId' $(BASE_ACCOUNT_JSON) > $(BASE_ACCOUNT_ID_TEXT)
+$(BASE_ACCOUNT_ID_TEXT): req.json
+	@if [ ! -e $(BASE_ACCOUNT_ID_TEXT) ]; then \
+		curl -sS -X POST "${ENDPOINT}/${SERVICE}/get" \
+		  -H "Content-Type: application/json" \
+        	  -H "Authorization: Bearer `jq -r .access_token $(TOKEN_JSON)`" \
+		  -d "@req.json" > $(BASE_ACCOUNT_JSON); \
+		jq --exit-status '.rval.values[0].account.accountId' $(BASE_ACCOUNT_JSON) > "$@.tmp"; \
+		mv "$@.tmp" "$@"; \
+	fi
