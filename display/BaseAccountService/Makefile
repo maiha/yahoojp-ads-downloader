@@ -37,11 +37,9 @@ run:
 	$(MAKE) $(BASE_ACCOUNT_ID_TEXT)
 
 $(BASE_ACCOUNT_ID_TEXT): req.json
-	@if [ ! -e $(BASE_ACCOUNT_ID_TEXT) ]; then \
-		curl -sS -X POST "${ENDPOINT}/${SERVICE}/get" \
-		  -H "Content-Type: application/json" \
-        	  -H "Authorization: Bearer `jq -r .access_token $(TOKEN_JSON)`" \
-		  -d "@req.json" > $(BASE_ACCOUNT_JSON); \
-		jq --exit-status '.rval.values[0].account.accountId' $(BASE_ACCOUNT_JSON) > "$@.tmp"; \
-		mv "$@.tmp" "$@"; \
-	fi
+	@curl -sS -X POST "${ENDPOINT}/${SERVICE}/get" \
+	  -H "Content-Type: application/json" \
+	  -H "Authorization: Bearer `jq -r .access_token $(TOKEN_JSON)`" \
+	  -d "@req.json" > $(BASE_ACCOUNT_JSON);
+	@jq --exit-status '.rval.values[0].account.accountId' $(BASE_ACCOUNT_JSON) > "$@.tmp";
+	@mv "$@.tmp" "$@";
