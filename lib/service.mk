@@ -3,6 +3,9 @@ current_dir := $(notdir $(patsubst %/,%,$(dir $(mkfile_path))))
 
 SERVICE=$(current_dir)
 OAUTH_DIR=../../oauth
+BASE_ACCOUNT_DIR=../BaseAccountService
+BASE_ACCOUNT_ID_TEXT=$(BASE_ACCOUNT_DIR)/base_account_id.txt
+
 TOKEN_JSON=$(OAUTH_DIR)/token.json
 ACCOUNTS_JSON=../AccountService/res.json
 TABLE=$(subst Service,,$(SERVICE))
@@ -52,12 +55,14 @@ token:
 ### api <get> <req.json> <res.json>
 define api
 	@make -s -C $(OAUTH_DIR) token
+	@make -s -C ../BaseAccountService "$(notdir $(BASE_ACCOUNT_ID_TEXT))"
 	@rm -f "$3"
 	curl --retry ${RETRY_COUNT} -s -X POST "$(ENDPOINT)/$(SERVICE)/$1" \
 	  -D "$3.header" \
 	  -H "accept: application/json" \
 	  -H "Authorization: Bearer `jq -r .access_token $(TOKEN_JSON)`" \
 	  -H "Content-Type: application/json" \
+	  -H "x-z-base-account-id: `cat $(BASE_ACCOUNT_ID_TEXT)`" \
 	  -d "@$2" >  "$3.err"
 	@grep -q '"errors":null' "$3.err" || jq .errors "$3.err" >> ng.json
 	@mv "$3.err" "$3"
@@ -135,7 +140,7 @@ schema.yaml:
 	# [$@] not found!
 	#
 	# Please download the schema for [$(SERVICE)] manually. For example;
-	#   curl https://raw.githubusercontent.com/yahoojp-marketing/ads-display-api-documents/master/design/v11/$(TABLE_LC)/$(TABLE).yaml > $@
+	#   curl https://raw.githubusercontent.com/yahoojp-marketing/ads-display-api-documents/master/design/v12/$(TABLE_LC)/$(TABLE).yaml > $@
 	#
 	@exit 1
 
