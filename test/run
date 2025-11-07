@@ -1,0 +1,17 @@
+#!/bin/bash
+set -e
+cd "$(dirname "$0")"
+
+echo "Running all tests..."
+echo
+
+for test in *_test.sh; do
+  if [ -f "$test" ]; then
+    echo "================================"
+    bash "$test" || exit 1
+    echo
+  fi
+done
+
+echo "================================"
+echo "All tests passed!"

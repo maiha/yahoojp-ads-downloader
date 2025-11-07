@@ -8,38 +8,35 @@ current_dir := $(notdir $(patsubst %/,%,$(dir $(mkfile_path))))
 SERVICE=$(current_dir)
 OAUTH_DIR=../../oauth
 TOKEN_JSON=$(OAUTH_DIR)/token.json
-BASE_ACCOUNT_JSON=base_account_id.json
-BASE_ACCOUNT_ID_TEXT=base_account_id.txt
-
-check_defined = \
-    $(strip $(foreach 1,$1, \
-        $(call __check_defined,$1,$(strip $(value 2)))))
-__check_defined = \
-    $(if $(value $1),, \
-      $(error Undefined $1$(if $2, ($2))))
-
-# credential
-$(call check_defined, CLIENT_ID)
-$(call check_defined, CLIENT_SECRET)
-$(call check_defined, REFRESH_TOKEN)
-
-# const
-$(call check_defined, ENDPOINT)
-$(call check_defined, RETRY_COUNT)
 
 usage:
-	# make $(BASE_ACCOUNT_ID_TEXT)      # call API and store as res.json
+	# make setup     # create base_accounts directory
+	# make recv      # call API
+	# make data      # create data.jsonl
 
 ######################################################################
 ### Action
 
 run:
-	$(MAKE) $(BASE_ACCOUNT_ID_TEXT)
+	$(MAKE) setup
+	$(MAKE) recv
+	$(MAKE) data
 
-$(BASE_ACCOUNT_ID_TEXT): req.json
+.PHONY: setup
+setup:
+	@mkdir -p base_accounts
+
+$(TOKEN_JSON):
+	@make -s -C $(OAUTH_DIR) token
+
+.PHONY: recv
+recv: req.json $(TOKEN_JSON)
 	@curl -sS -X POST "${ENDPOINT}/${SERVICE}/get" \
 	  -H "Content-Type: application/json" \
 	  -H "Authorization: Bearer `jq -r .access_token $(TOKEN_JSON)`" \
-	  -d "@req.json" > $(BASE_ACCOUNT_JSON);
-	@jq --exit-status '.rval.values[0].account.accountId' $(BASE_ACCOUNT_JSON) > "$@.tmp";
-	@mv "$@.tmp" "$@";
+	  -d "@req.json" > res.json
+
+.PHONY: data
+data:
+	@jq --exit-status -c '.rval.values[].account' res.json > "data.jsonl.tmp"
+	@mv "data.jsonl.tmp" "data.jsonl"

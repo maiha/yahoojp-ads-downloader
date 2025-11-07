@@ -41,6 +41,9 @@ expire:
 	@find . -maxdepth 1 -mmin +50 -name token.json | xargs -r rm
 
 token.json:
+	@test -n "$(CLIENT_ID)" || { echo "ERROR: CLIENT_ID is not set. Please check credential.env" >&2; exit 1; }
+	@test -n "$(CLIENT_SECRET)" || { echo "ERROR: CLIENT_SECRET is not set. Please check credential.env" >&2; exit 1; }
+	@test -n "$(REFRESH_TOKEN)" || { echo "ERROR: REFRESH_TOKEN is not set. Please check credential.env" >&2; exit 1; }
 	: # regenerate access_token
 	@curl -s -D token.header "$(OAUTH_URL)/oauth/v1/token?grant_type=refresh_token&client_id=$(CLIENT_ID)&client_secret=$(CLIENT_SECRET)&refresh_token=$(REFRESH_TOKEN)" > "$@.tmp"
 	@grep access_token "$@.tmp" > /dev/null

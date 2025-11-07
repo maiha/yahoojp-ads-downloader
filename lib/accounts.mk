@@ -1,26 +1,37 @@
+ACCOUNT_DIR=../AccountService
+ACCOUNTS_JSONL=$(ACCOUNT_DIR)/data.jsonl
+
 usage:
-	# make accounts  # prepare account directories
-	# make recv      # call API and store as res.json
-	# make data      # create data.jsonl from res.json
+	# make setup     # prepare account directories
+	# make recv      # call API
+	# make data      # create data.jsonl
 	# make db        # insert into ClickHouse
 	# make run       # execute all above tasks
 
 run:
-	$(MAKE) accounts
+	$(MAKE) setup
 	$(MAKE) recv
 	$(MAKE) data
 	$(MAKE) db
 	@$(MAKE) done
 
-recv: accounts
-	for aid in `ls -1v accounts/ | grep -E '^[0-9]{1,}$$'`; do \
+.PHONY: setup
+setup: accounts
+	@$(MAKE) setup-impl
+
+setup-impl: $(addsuffix /req.json,$(wildcard accounts/*))
+
+recv: setup
+	for aid in `ls -1v accounts/`; do \
 	  [ -f accounts/$$aid/res.json ] || $(MAKE) get/accounts/$$aid || exit 255; \
 	done
 
+accounts/%/req.json: req.json accounts/%/base_account_id
+	@jq ".accountId = $*" req.json > "$@.tmp"
+	@mv "$@.tmp" "$@"
+
 get/accounts/%:
-	@jq ".accountId = $*" req.json > "accounts/$*/req.json.err"
-	@mv "accounts/$*/req.json.err" "accounts/$*/req.json"
-	$(call api,get,accounts/$*/req.json,accounts/$*/res.json) || exit 255
+	$(call api,get,accounts/$*/req.json,accounts/$*/res.json,`cat accounts/$*/base_account_id`) || exit 255
 
 each_jsonl: $(sort $(addsuffix data.jsonl,$(dir $(wildcard accounts/*/res.json))))
 
@@ -34,20 +45,16 @@ data: accounts
 ######################################################################
 ### accounts
 
-accounts: $(ACCOUNTS_JSON)
-	@rm -rf accounts
-	@mkdir  accounts
-	@jq -r '.rval.values[].account | select(.accountStatus == "SERVING") | .accountId' $(ACCOUNTS_JSON) | xargs -r -n1 -I@ mkdir "accounts/@"
-	@echo "created: `find accounts -mindepth 1 -type d | wc -l` accounts"
+accounts: $(ACCOUNT_DIR)/accounts
+	rm -rf accounts
+	cp -pr "$<" .
+
+$(ACCOUNT_DIR)/accounts:
+	@make -s -C $(ACCOUNT_DIR) accounts
+
+$(ACCOUNTS_JSONL):
+	@make -s -C $(ACCOUNT_DIR) run
 
 accounts/%/data.jsonl : accounts/%/res.json
 	@jq -f map.jq "$<" > "$@.err"
 	@mv "$@.err" "$@"
-
-accounts/%/num:
-	@jq -c -r '.rval.totalNumEntries' "accounts/$*/res.json"
-
-EACH_ACCOUNTS=ls -1v accounts/ | grep -E '^[0-9]{1,}$$' | sed -e 's|^|accounts/|'
-
-map/%:
-	@$(EACH_ACCOUNTS) | xargs -n1 -r -I@ sh -c 'printf "%s\t" "`basename @`"; make "@/$*"' || exit 2
