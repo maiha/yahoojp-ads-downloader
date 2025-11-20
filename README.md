@@ -1,5 +1,7 @@
 # Yahoo! JAPAN Ads Downloader
 
+[![CI](https://github.com/maiha/yahoojp-ads-downloader/actions/workflows/ci.yml/badge.svg)](https://github.com/maiha/yahoojp-ads-downloader/actions/workflows/ci.yml)
+
 Call the API of Yahoo! JAPAN Ads and import the data into the DB(ClickHouse).
 
 * Search Ads API  : https://ads-developers.yahoo.co.jp/reference/ads-search-api/v17/
