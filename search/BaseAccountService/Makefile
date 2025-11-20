@@ -10,7 +10,7 @@ OAUTH_DIR=../../oauth
 TOKEN_JSON=$(OAUTH_DIR)/token.json
 
 usage:
-	# make setup     # create base_accounts directory
+	# make setup     # NOP
 	# make recv      # call API
 	# make data      # create data.jsonl
 
@@ -24,7 +24,7 @@ run:
 
 .PHONY: setup
 setup:
-	@mkdir -p base_accounts
+	@:
 
 $(TOKEN_JSON):
 	@make -s -C $(OAUTH_DIR) token

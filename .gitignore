@@ -1,10 +1,13 @@
 credential.env
+!/test/fixtures/**/accounts
+!/test/fixtures/**/base_accounts
 /search/**/accounts
 /display/**/accounts
 /search/**/base_accounts
 /display/**/base_accounts
 token.*
 res.*
+!test/fixtures/**/res.json
 data.*
 schema.*
 *.header

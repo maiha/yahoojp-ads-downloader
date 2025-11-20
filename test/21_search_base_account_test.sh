@@ -23,12 +23,6 @@ describe "search/BaseAccountService"
   cd sandbox/search/BaseAccountService
   EXPECTED="../../../fixtures/search/BaseAccountService"
 
-  it "make setup"
-  {
-    @run make setup
-    @run diff -r base_accounts $EXPECTED/base_accounts
-  }
-
   it "make data"
   {
     @run make data

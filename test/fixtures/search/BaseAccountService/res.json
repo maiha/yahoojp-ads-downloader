@@ -1,0 +1,19 @@
+{
+  "rval": {
+    "values": [
+      {
+        "account": {
+          "accountId": 999999999,
+          "accountName": "Test Base Account 1"
+        }
+      },
+      {
+        "account": {
+          "accountId": 888888888,
+          "accountName": "Test Base Account 2"
+        }
+      }
+    ]
+  },
+  "errors": null
+}

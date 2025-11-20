@@ -23,12 +23,6 @@ describe "display/BaseAccountService"
   cd sandbox/display/BaseAccountService
   EXPECTED="../../../fixtures/display/BaseAccountService"
 
-  it "make setup"
-  {
-    @run make setup
-    @run diff -r base_accounts $EXPECTED/base_accounts
-  }
-
   it "make data"
   {
     @run make data
