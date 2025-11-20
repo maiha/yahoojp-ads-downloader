@@ -1,0 +1,23 @@
+{
+  "rval": {
+    "values": [
+      {
+        "operationSucceeded": true,
+        "account": {
+          "accountId": 12345,
+          "accountName": "Test Account 1",
+          "accountStatus": "SERVING"
+        }
+      },
+      {
+        "operationSucceeded": true,
+        "account": {
+          "accountId": 34567,
+          "accountName": "Test Account 3",
+          "accountStatus": "WAIT_DECIDE"
+        }
+      }
+    ]
+  },
+  "errors": null
+}
