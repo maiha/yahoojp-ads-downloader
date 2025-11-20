@@ -1,9 +1,19 @@
 credential.env
-accounts
+/search/**/accounts
+/display/**/accounts
+/search/**/base_accounts
+/display/**/base_accounts
 token.*
 res.*
 data.*
 schema.*
 *.header
 *.jsonl
+!test/fixtures/*.jsonl
 *.tmp
+ng.json
+
+# Test artifacts
+test/sandbox/
+run.*
+assert.out

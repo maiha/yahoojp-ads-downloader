@@ -3,15 +3,14 @@ current_dir := $(notdir $(patsubst %/,%,$(dir $(mkfile_path))))
 
 SERVICE=$(current_dir)
 OAUTH_DIR=../../oauth
-BASE_ACCOUNT_DIR=../BaseAccountService
-BASE_ACCOUNT_ID_TEXT=$(BASE_ACCOUNT_DIR)/base_account_id.txt
+# BASE_ACCOUNTS_JSONL contains all base_account information in JSONL format
+BASE_ACCOUNTS_JSONL=../BaseAccountService/data.jsonl
 
 TOKEN_JSON=$(OAUTH_DIR)/token.json
-ACCOUNTS_JSON=../AccountService/res.json
 TABLE=$(subst Service,,$(SERVICE))
 
 ######################################################################
-### check required variables
+### check required variables (runtime check)
 ### https://stackoverflow.com/questions/10858261/how-to-abort-makefile-if-variable-not-set
 
 check_defined = \
@@ -20,17 +19,6 @@ check_defined = \
 __check_defined = \
     $(if $(value $1),, \
       $(error Undefined $1$(if $2, ($2))))
-
-# credential
-$(call check_defined, CLIENT_ID)
-$(call check_defined, CLIENT_SECRET)
-$(call check_defined, REFRESH_TOKEN)
-
-# const
-$(call check_defined, ENDPOINT)
-$(call check_defined, DB)
-$(call check_defined, NPROCS)
-$(call check_defined, RETRY_COUNT)
 
 ######################################################################
 all: usage
@@ -52,17 +40,17 @@ token:
 
 ######################################################################
 ### macro for API
-### api <get> <req.json> <res.json>
+### api <method> <req.json> <res.json> [base_account_id]
+### If base_account_id is not provided, the x-z-base-account-id header is omitted (for BaseAccountService only)
 define api
 	@make -s -C $(OAUTH_DIR) token
-	@make -s -C ../BaseAccountService "$(notdir $(BASE_ACCOUNT_ID_TEXT))"
 	@rm -f "$3"
 	curl --retry ${RETRY_COUNT} -s -X POST "$(ENDPOINT)/$(SERVICE)/$1" \
 	  -D "$3.header" \
 	  -H "accept: application/json" \
 	  -H "Authorization: Bearer `jq -r .access_token $(TOKEN_JSON)`" \
 	  -H "Content-Type: application/json" \
-	  -H "x-z-base-account-id: `cat $(BASE_ACCOUNT_ID_TEXT)`" \
+	  $(if $4,-H "x-z-base-account-id: $4",) \
 	  -d "@$2" >  "$3.err"
 	@grep -q '"errors":null' "$3.err" || jq .errors "$3.err" >> ng.json
 	@mv "$3.err" "$3"

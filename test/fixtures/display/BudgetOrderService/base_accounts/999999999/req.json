@@ -1,0 +1,8 @@
+{
+  "accountIds": [
+    12345,
+    34567
+  ],
+  "numberResults": 500,
+  "startIndex": 1
+}
