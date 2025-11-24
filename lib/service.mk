@@ -128,7 +128,7 @@ schema.yaml:
 	# [$@] not found!
 	#
 	# Please download the schema for [$(SERVICE)] manually. For example;
-	#   curl https://raw.githubusercontent.com/yahoojp-marketing/ads-display-api-documents/master/design/v17/$(TABLE_LC)/$(TABLE).yaml > $@
+	#   curl https://raw.githubusercontent.com/yahoojp-marketing/ads-display-api-documents/master/design/v18/$(TABLE_LC)/$(TABLE).yaml > $@
 	#
 	@exit 1
 
